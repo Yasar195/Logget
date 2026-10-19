@@ -1,8 +1,8 @@
 # Logget
 
-![Logget logo](./logget.png)
+<img src="./logget.png" alt="Logget logo" width="200">
 
-Logget is a lightweight Rust application for watching Docker container activity and streaming live logs from running containers.
+Logget is a lightweight Rust application for watching Docker container activity and streamings live logs from running containers.
 
 ## What it does
 
