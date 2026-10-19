@@ -1,5 +1,7 @@
 # Logget
 
+![Logget logo](./logget.png)
+
 Logget is a lightweight Rust application for watching Docker container activity and streaming live logs from running containers.
 
 ## What it does
@@ -19,7 +21,7 @@ Logget is a lightweight Rust application for watching Docker container activity 
 ## Requirements
 
 - Docker installed and running on the host
-- Linux/macOS environment with Docker socket access
+- Linux/macOS environment with Docker socket accesss
 - Rust toolchain if you want to build locally
 
 ## Local run
