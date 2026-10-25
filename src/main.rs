@@ -1,42 +1,78 @@
-use bollard::query_parameters::{ListContainersOptionsBuilder, LogsOptionsBuilder};
+mod handlers;
+mod models;
+mod services;
+mod state;
+
+use std::net::SocketAddr;
+
+use axum::{
+    http::Method,
+    routing::get,
+    Router,
+};
 use bollard::Docker;
-use futures_util::StreamExt;
+use tower_http::cors::{Any, CorsLayer};
+use tokio::signal;
+
+use crate::{
+    handlers::containers::{container_events, container_logs, health, list_containers, search_containers},
+    state::AppState,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let docker = Docker::connect_with_local_defaults()?;
+    let state = AppState { docker };
 
-    let containers = docker
-        .list_containers(Some(ListContainersOptionsBuilder::default().all(false).build()))
-        .await?;
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
+        .allow_headers([
+            axum::http::header::CONTENT_TYPE,
+            axum::http::header::ACCEPT,
+            axum::http::header::AUTHORIZATION,
+        ]);
 
-    if let Some(container) = containers.first() {
-        let name = container
-            .names
-            .as_ref()
-            .and_then(|n| n.first())
-            .map(|n| n.trim_start_matches('/'))
-            .unwrap_or("unknown-container");
+    let app = Router::new()
+        .route("/health", get(health))
+        .route("/api/containers", get(list_containers))
+        .route("/api/containers/search", get(search_containers))
+        .route("/api/containers/events", get(container_events))
+        .route("/api/containers/{name}/logs", get(container_logs))
+        .layer(cors)
+        .with_state(state);
 
-        println!("Following logs for: {}", name);
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    println!("Listening on http://{}", addr);
 
-        let mut stream = docker.logs(
-            name,
-            Some(
-                LogsOptionsBuilder::default()
-                    .follow(true)
-                    .stdout(true)
-                    .stderr(true)
-                    .tail("all")
-                    .build(),
-            ),
-        );
-
-        while let Some(log) = stream.next().await {
-            let line = log?;
-            println!("{}", line);
-        }
-    }
+    axum::serve(
+        tokio::net::TcpListener::bind(addr).await?,
+        app.into_make_service(),
+    )
+    .with_graceful_shutdown(shutdown_signal())
+    .await?;
 
     Ok(())
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        signal::ctrl_c().await.expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
 }

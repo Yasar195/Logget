@@ -23,6 +23,7 @@ Logget is a lightweight Rust application for watching Docker container activity 
 - Docker installed and running on the host
 - Linux/macOS environment with Docker socket accesss
 - Rust toolchain if you want to build locally
+- Target Linux machine must allow the binary to access `/var/run/docker.sock`
 
 ## Local run
 
@@ -32,6 +33,28 @@ cargo run
 ```
 
 This connects to the local Docker daemon and starts following logs for the first available running container.
+
+## Download latest Linux binary
+
+### Direct curl download
+
+```bash
+curl -fsSL https://github.com/<owner>/<repo>/releases/latest/download/logget-linux-amd64.tar.gz -o logget-linux-amd64.tar.gz
+tar -xzf logget-linux-amd64.tar.gz
+sudo install -m 0755 logget-linux-amd64 /usr/local/bin/logget
+```
+
+### Install script
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/main/install.sh | sudo bash -s -- <owner>/<repo>
+```
+
+Or with an environment variable:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/main/install.sh | sudo env LOGGET_REPO=<owner>/<repo> bash
+```
 
 ## Docker run
 
@@ -61,3 +84,14 @@ Following logs for: my-container
 - Filter logs by timestamp or severity
 - Add a web UI or dashboard
 - Support multiple container streams concurrently
+
+## Release workflow
+
+This repo publishes a Linux x86_64 release binary using GitHub Actions. Every git tag matching `v*` triggers a build and uploads the resulting release assets.
+
+Example:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
