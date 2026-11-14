@@ -39,7 +39,7 @@ This connects to the local Docker daemon and starts following logs for the first
 ### Direct curl download
 
 ```bash
-curl -fsSL https://github.com/<owner>/<repo>/releases/latest/download/logget-linux-amd64.tar.gz -o logget-linux-amd64.tar.gz
+curl -fsSL https://github.com/Yasar195/Logget/releases/latest/download/logget-linux-amd64.tar.gz -o logget-linux-amd64.tar.gz
 tar -xzf logget-linux-amd64.tar.gz
 sudo install -m 0755 logget-linux-amd64 /usr/local/bin/logget
 ```
@@ -47,13 +47,13 @@ sudo install -m 0755 logget-linux-amd64 /usr/local/bin/logget
 ### Install script
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/main/install.sh | sudo bash -s -- <owner>/<repo>
+curl -fsSL https://raw.githubusercontent.com/Yasar195/Logget/main/install.sh | sudo bash -s -- Yasar195/Logget
 ```
 
 Or with an environment variable:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/main/install.sh | sudo env LOGGET_REPO=<owner>/<repo> bash
+curl -fsSL https://raw.githubusercontent.com/Yasar195/Logget/main/install.sh | sudo env LOGGET_REPO=Yasar195/Logget bash
 ```
 
 ## Docker run
